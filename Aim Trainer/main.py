@@ -126,7 +126,7 @@ class Circle:
 
 #Main Loop
 running = True
-clock = pygame.time.lock()
+clock = pygame.time.Clock()
 start_ticks = pygame.time.get_ticks()
 
 while running:
