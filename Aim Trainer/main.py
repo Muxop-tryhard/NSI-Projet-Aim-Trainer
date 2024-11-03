@@ -2,7 +2,6 @@ import pygame
 import time
 from src.model import Circle,Display_menu
 from pygame import KEYDOWN,FULLSCREEN
-from src.model.Display_menu import DisplayMenu
 
 pygame.init()
 
@@ -14,14 +13,14 @@ bg=pygame.image.load("Assets/BG.jpg")
 bg_nuke = pygame.image.load("Assets/BG_nuke.jpg")
 bg_parameters= pygame.image.load("Assets/BG_parameters.jpg")
 
-cursors_images =[]
-for i in range(4):
-    cursors_images.append(pygame.image.load("Assets/Cursors/cursor_{}.png".format(i)).convert_alpha())
-
 font = pygame.font.SysFont("Times New Roman", 35)
 big_font = pygame.font.SysFont("Times New Roman", 55,True)
 
-cursors=[]
+cursors_images = []
+for i in range(4):
+    cursors_images.append(pygame.image.load("Assets/Cursors/cursor_{}.png".format(i)).convert_alpha())
+
+cursors = []
 cursors.append(pygame.cursors.Cursor((38,38), cursors_images[0]))
 cursors.append(pygame.cursors.Cursor((38,38), cursors_images[1]))
 cursors.append(pygame.cursors.Cursor((120,120), cursors_images[2]))
@@ -52,6 +51,8 @@ start_time = time.time()
 difficulty = None
 parameter = False
 
+
+#A mettre dans game
 def set_difficulty(difficulty):
     if difficulty == "facile":
         return 60, 3, 2
@@ -60,28 +61,22 @@ def set_difficulty(difficulty):
     elif difficulty == "difficile":
         return 40, 1, 1
 
-def display_timer(start_ticks):
 
-    elapsed_time_ms = pygame.time.get_ticks() - start_ticks
-    elapsed_time_sec = elapsed_time_ms // 1000
-    minutes = elapsed_time_sec // 60
-    seconds = elapsed_time_sec % 60
-    timer_text = f"{minutes:02}:{seconds:02}"
-    timer_surface = font.render(timer_text, True, pygame.Color("white"))
-    screen.blit(timer_surface, (WIDTH - 100, 10))
+
+
 
 #Main Loop
 running = True
 clock = pygame.time.Clock()
 start_ticks = pygame.time.get_ticks()
 
-display_menu=Display_menu.DisplayMenu(screen, WIDTH,HEIGHT ,pygame,font)
+display_menu=Display_menu.DisplayMenu(screen, WIDTH,HEIGHT ,pygame,font,bg,start_ticks)
 
 while running:
 
     clock.tick(FPS)
     if difficulty is None and parameter is False:
-        display_menu.draw_main_menu(bg)
+        display_menu.draw_main_menu()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -110,7 +105,7 @@ while running:
                     start_ticks = pygame.time.get_ticks()
     elif parameter is True :
         display_menu.draw_parameter_menu(bg_parameters,big_font,cursors_images,cursors_images_display)
-        display_menu.choose_cursor(cursors,cursors_images_display,bg)
+        display_menu.choose_cursor(cursors,cursors_images_display)
         parameter =False
 
     else:
@@ -125,7 +120,7 @@ while running:
 
             if event.type  == KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    display_menu.draw_main_menu(bg)
+                    display_menu.draw_main_menu()
                     difficulty = None
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -161,7 +156,7 @@ while running:
         screen.blit(highest_combo_text, (10, 90))
         screen.blit(difficulty_text, (10, 130))
         screen.blit(duration_of_the_round, (10, 170))
-        display_timer(start_ticks)
+        display_menu.draw_game_timer()
         pygame.display.flip()
 
 pygame.quit()
