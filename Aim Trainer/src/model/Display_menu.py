@@ -3,14 +3,14 @@ class DisplayMenu:
 
 #mettre le BG dans le init
 
-    def __init__(self,screen,WIDTH,HEIGHT,pygame,font,bg,start_ticks):
+    def __init__(self,screen,WIDTH,HEIGHT,pygame,font,bg):
         self.screen = screen
         self.WIDTH = WIDTH
         self.HEIGHT = HEIGHT
         self.pygame = pygame
         self.font = font
         self.bg = bg
-        self.start_ticks = start_ticks
+
 
     def draw_main_menu(self):
         self.screen.blit(self.bg, (0, 0))
@@ -36,21 +36,19 @@ class DisplayMenu:
         self.screen.blit(button_parameters_text, (button_parameters.x + 20, button_parameters.y + 10))
         self.pygame.display.flip()
 
-    def draw_parameter_menu(self,bg_parameters,big_font,cursors_images,cursors_display):
+    def draw_parameter_menu(self,bg_parameters,big_font,cursors_images,cursors_images_display):
         self.screen.blit(bg_parameters, (0, 0))
         text_cursor_choice = big_font.render("Choisisser le curseur qui vous convient le mieux en cliquant dessus",True, self.pygame.Color("black"))
         self.screen.blit(text_cursor_choice, (0, self.HEIGHT / 2))
-        self.screen.blit(cursors_images[3], cursors_display[3])
-        self.screen.blit(cursors_images[0], cursors_display[0])
-        self.screen.blit(cursors_images[1], cursors_display[1])
-        self.screen.blit(cursors_images[2], cursors_display[2])
+        self.screen.blit(cursors_images[3], cursors_images_display[3])
+        self.screen.blit(cursors_images[0], cursors_images_display[0])
+        self.screen.blit(cursors_images[1], cursors_images_display[1])
+        self.screen.blit(cursors_images[2], cursors_images_display[2])
         self.pygame.display.flip()
 
 
-    def launch_game(self):
-        pass
-
     def choose_cursor(self,cursors,cursors_images_display):
+
         exit = False
         while exit == False:
             for event in self.pygame.event.get():
@@ -68,8 +66,25 @@ class DisplayMenu:
                     if cursors_images_display[3].collidepoint(event.pos):
                         self.pygame.mouse.set_cursor(cursors[3])
 
-    def draw_game_timer(self):
-        elapsed_time_ms = self.pygame.time.get_ticks() - self.start_ticks
+    def choose_difficulty(self,difficulty,parameter):
+            for event in self.pygame.event.get():
+                if event.type == self.pygame.MOUSEBUTTONDOWN:
+                    if self.pygame.Rect(200, 200, 150, 50).collidepoint(event.pos):
+                        difficulty = "facile"
+                    elif self.pygame.Rect(200, 300, 150, 50).collidepoint(event.pos):
+                        difficulty = "normal"
+                    elif self.pygame.Rect(200, 400, 150, 50).collidepoint(event.pos):
+                        difficulty = "difficile"
+                    elif self.pygame.Rect(self.WIDTH - 230, self.HEIGHT - 70, 200, 50).collidepoint(event.pos):
+                        parameter = True
+
+            return (difficulty,parameter,)
+
+
+
+
+    def draw_game_timer(self,start_ticks):
+        elapsed_time_ms = self.pygame.time.get_ticks() - start_ticks
         elapsed_time_sec = elapsed_time_ms // 1000
         minutes = elapsed_time_sec // 60
         seconds = elapsed_time_sec % 60
@@ -77,10 +92,10 @@ class DisplayMenu:
         timer_surface = self.font.render(timer_text, True, self.pygame.Color("white"))
         self.screen.blit(timer_surface, (self.WIDTH - 100, 10))
 
-    def draw_relative_game_infos(self ):
 
-        score_text = self.font.render(f"Score: {score}", True, pygame.Color("white"))
-        combo_text = self.font.render(f"Combo: {combo}", True, pygame.Color("white"))
+    def draw_relative_game_infos(self,score,combo,highest_combo,difficulty):
+        score_text = self.font.render(f"Score: {score}", True, self.pygame.Color("white"))
+        combo_text = self.font.render(f"Combo: {combo}", True, self.pygame.Color("white"))
         highest_combo_text = self.font.render(f"Highest Combo: {highest_combo}", True, self.pygame.Color("white"))
         difficulty_text = self.font.render(f"Difficulté: {difficulty}", True, self.pygame.Color("white"))
         duration_of_the_round = self.font.render("Temps de la manche : 3min", True, self.pygame.Color("white"))
@@ -91,3 +106,6 @@ class DisplayMenu:
         self.screen.blit(difficulty_text, (10, 130))
         self.screen.blit(duration_of_the_round, (10, 170))
         self.pygame.display.flip()
+
+    def display_game_background(self,bg_nuke):
+        self.screen.blit(bg_nuke, (0, 0))
