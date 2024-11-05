@@ -1,27 +1,30 @@
 import math
 import random
 import time
-import pygame
 
 class Circle:
-    def __init__(self, radius,HEIGHT,WIDTH):
+
+    def __init__(self, radius,HEIGHT,WIDTH,pygame):
         self.x = random.randint(radius+100, WIDTH - radius -100)
         self.y = random.randint(radius+200, HEIGHT - radius)
         self.radius = radius
         self.spawn_time = time.time()
+        self.pygame = pygame
 
     def draw(self,screen):
-        pygame.draw.circle(screen,pygame.Color("black"), (self.x, self.y), self.radius, 7)
+        self.pygame.draw.circle(screen,self.pygame.Color("black"), (self.x, self.y), self.radius, 7)
 
     def is_clicked(self, pos):
         distance = math.sqrt((pos[0] - self.x)**2 + (pos[1] - self.y)**2)
         return distance < self.radius
 
-class Game_maker:
+class Game_Maker:
+
     def __init__(self,pygame):
         self.pygame=pygame
 
     def set_difficulty(self,difficulty):
+
         if difficulty == "facile":
             return (60, 3, 2)
         elif difficulty == "normal":
@@ -29,29 +32,36 @@ class Game_maker:
         elif difficulty == "difficile":
             return (40, 1, 1)
 
-
     def launch_game(self,screen,difficulty,HEIGHT,WIDTH,display_menu,bg_nuke):
 
-        CIRCLE_RADIUS, CIRCLE_LIFETIME, SPAWN_RATE = self.set_difficulty(difficulty)
-        last_spawn_time = time.time()
         circles = []
+        CIRCLE_RADIUS, CIRCLE_LIFETIME, SPAWN_RATE = self.set_difficulty(difficulty)
+
         score = 0
         combo = 0
         highest_combo = 0
-        starting_time = time.time()
+
+        last_spawn_time = time.time()
         start_ticks = self.pygame.time.get_ticks()
+        starting_time = time.time()
         game_duration = 0
 
         while game_duration <= 180:
             game_duration =+ time.time() - starting_time
-            print(game_duration)
             display_menu.display_game_background(bg_nuke)
+
             if time.time() - last_spawn_time >= SPAWN_RATE:
-                circles.append(Circle(CIRCLE_RADIUS, HEIGHT, WIDTH))
+                circles.append(Circle(CIRCLE_RADIUS, HEIGHT, WIDTH,self.pygame))
                 last_spawn_time = time.time()
+
             for circle in circles:
                 circle.draw(screen)
+
             for event in self.pygame.event.get():
+
+                if event.type == self.pygame.KEYDOWN and event.key == self.pygame.K_ESCAPE:
+                        return
+
                 if event.type == self.pygame.MOUSEBUTTONDOWN:
                     hit = False
                     for circle in circles:
@@ -63,12 +73,14 @@ class Game_maker:
                             break
                     if not hit:
                         combo = 0
+
             for circle in circles:
                 if time.time() - circle.spawn_time > CIRCLE_LIFETIME:
                     circles.remove(circle)
                     combo = 0
                 else:
                     circle.draw(screen)
+
             if combo > highest_combo:
                 highest_combo = combo
 
