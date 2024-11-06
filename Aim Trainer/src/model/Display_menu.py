@@ -1,5 +1,8 @@
 import sys
 
+from pygame import Color
+
+
 class DisplayMenu:
 
     def __init__(self,screen,WIDTH,HEIGHT,pygame,font,bg):
@@ -57,6 +60,7 @@ class DisplayMenu:
                 if event.type == self.pygame.KEYDOWN and event.key == self.pygame.K_ESCAPE:
                     return
             self.screen.fill((self.pygame.Color("deeppink4")))
+
             self.pygame.display.flip()
 
     def choose_cursor(self,cursors,cursors_images_display):
@@ -124,3 +128,17 @@ class DisplayMenu:
 
     def display_game_background(self,bg_nuke):
         self.screen.blit(bg_nuke, (0, 0))
+
+    def display_leaderboard_top_10(self,leaderboard_top_10):
+
+        list_columns = ['Username','Difficulty','Highest Combo','Score']
+        column_widths = [150, 120, 100, 150]
+        for i, col in enumerate(list_columns):
+            text = self.font.render(col, True,Color='brown4')
+            self.screen.blit(text, (column_widths[i] * i + 10,30))
+
+        for i,value in enumerate(leaderboard_top_10):
+            y_display_coordinate = 30 + (i + 1) * 30
+            for j,text_info in enumerate(value):
+                text = self.font.render(str(text_info), True, Color='black')
+                self.screen.blit(text, (column_widths[j] * j + 10, y_display_coordinate))
