@@ -1,173 +1,87 @@
 import pygame
-import random
-import math
+import sys
 import time
-from pygame import KEYDOWN, FULLSCREEN
+from src.model import Display_menu,Game,SQL_data_retriving
+from pygame import KEYDOWN, FULLSCREEN, Color
 
+#On initialise Pygame
 pygame.init()
 
-#Constants
-WIDTH, HEIGHT = 1920, 1080
-FPS = 240
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLACK = (0, 0, 0)
-BLUE = (0, 0, 255)
-font = pygame.font.SysFont("Times New Roman", 35)
+screen = pygame.display.set_mode((0,0),FULLSCREEN)
+WIDTH, HEIGHT = screen.get_size()
 
+#Ce seront les variables qui nous permettent de vérifier sur quel page on se situe
+difficulty = None
+parameter = None
+leaderbord = None
 
-# Screen + Backgrounds
-bg = pygame.image.load("Assets/BG.jpg")
-bg_nuke = pygame.image.load(("Assets/BG_nuke.jpg"))
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+#On charge les fonds d'écrans que l'ont uttilisera
+bg=pygame.image.load("Assets/BG.jpg")
+bg_nuke = pygame.image.load("Assets/BG_nuke.jpg")
 
+#On charge les images des curseurs
+cursors_images = []
+for i in range(4):
+    cursors_images.append(pygame.image.load("Assets/Cursors/cursor_{}.png".format(i)).convert_alpha())
+
+#On définnit la position du curseur au centre de chaque image
+cursors = []
+cursors.append(pygame.cursors.Cursor((38,38), cursors_images[0]))
+cursors.append(pygame.cursors.Cursor((38,38), cursors_images[1]))
+cursors.append(pygame.cursors.Cursor((120,120), cursors_images[2]))
+cursors.append(pygame.cursors.Cursor((75,75), cursors_images[3]))
+
+#On définit les positions d'affichages de chaque curseurs dans le menu paramètres
+cursors_images_display=[]
+cursors_images_display.append(cursors_images[0].get_rect(center=(WIDTH / 2 - 450, HEIGHT / 2 - 300)))
+cursors_images_display.append(cursors_images[1].get_rect(center=(WIDTH / 2 + 450, HEIGHT / 2 - 300)))
+cursors_images_display.append(cursors_images[2].get_rect(center=(WIDTH / 2 - 450, HEIGHT / 2 + 300)))
+cursors_images_display.append(cursors_images[3].get_rect(center=(WIDTH / 2 + 450, HEIGHT / 2 + 300)))
+
+#On définit le curseur par défaut
+pygame.mouse.set_cursor(cursors[0])
+
+#On définit le nom de l'onglet qui apparaitra dans la barre des taches
 pygame.display.set_caption("Aim Trainer")
 
+#On charge les fonts que l'ont uttilisera
+font = pygame.font.SysFont("Times New Roman", 35)
+big_font = pygame.font.SysFont("Times New Roman", 55,True)
 
-# The Setup Variables
-circles = []
-score = 0
-combo = 0
-highest_combo = 0
-start_time = time.time()
-difficulty = None
-
-def set_difficulty(difficulty):
-    if difficulty == "facile":
-        return 60, 3, 2
-    elif difficulty == "normal":
-        return 50, 2, 1.5
-    elif difficulty == "difficile":
-        return 40, 1, 1
-
-
-# Main menu
-button_easy = pygame.Rect(200, 200, 150, 50)
-button_normal = pygame.Rect(200, 300, 150, 50)
-button_hard = pygame.Rect(200, 400, 150, 50)
-
-def draw_menu():
-    screen.blit(bg, (0, 0))
-    pygame.draw.rect(screen, GREEN, button_easy)
-    pygame.draw.rect(screen, BLUE, button_normal)
-    pygame.draw.rect(screen, RED, button_hard)
-
-    easy_text = font.render("Facile", True, BLACK)
-    normal_text = font.render("Normal", True, BLACK)
-    hard_text = font.render("Difficile", True, BLACK)
-
-    screen.blit(easy_text, (button_easy.x + 20, button_easy.y + 10))
-    screen.blit(normal_text, (button_normal.x + 20, button_normal.y + 10))
-    screen.blit(hard_text, (button_hard.x + 20, button_hard.y + 10))
-    pygame.display.flip()
-
-def display_timer(start_ticks):
-    elapsed_time_ms = pygame.time.get_ticks() - start_ticks
-    elapsed_time_sec = elapsed_time_ms // 1000
-    minutes = elapsed_time_sec // 60
-    seconds = elapsed_time_sec % 60
-    timer_text = f"{minutes:02}:{seconds:02}"
-    timer_surface = font.render(timer_text, True, WHITE)
-    screen.blit(timer_surface, (WIDTH - 100, 10))
-
-class Circle:
-    def __init__(self, radius):
-        self.x = random.randint(radius, WIDTH - radius)
-        self.y = random.randint(radius, HEIGHT - radius)
-        self.radius = radius
-        self.spawn_time = time.time()
-
-    def draw(self):
-        pygame.draw.circle(screen, BLACK, (self.x, self.y), self.radius, 15)
-
-    def is_clicked(self, pos):
-        distance = math.sqrt((pos[0] - self.x)**2 + (pos[1] - self.y)**2)
-        return distance < self.radius
-
-#Main Loop
-running = True
+#On instancie la classe Clock qui nous permetra notamment de gérer la fréquence d'affichage
 clock = pygame.time.Clock()
-start_ticks = pygame.time.get_ticks()
 
-while running:
-    clock.tick(FPS)
-    if difficulty is None:
-        draw_menu()
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+#On instancie les classes qui nous permettrons de : 1-Afficher du contenu 2-Joueur au jeu
+sql_manager=SQL_data_retriving.SQL_querys()
+display_menu=Display_menu.DisplayMenu(screen, WIDTH,HEIGHT ,pygame,font,bg,sql_manager)
+game_runer=Game.Game_Maker(pygame,sql_manager)
 
-            if event.type == KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
+# On lance la boucle du jeu
+while True:
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if button_easy.collidepoint(event.pos):
-                    difficulty = "facile"
-                elif button_normal.collidepoint(event.pos):
-                    difficulty = "normal"
-                elif button_hard.collidepoint(event.pos):
-                    difficulty = "difficile"
+    clock.tick(120) #Limite le nombre de FPS à 120 pour améliorer la fluide en gardant le même nombre de FPS constant
 
-                if difficulty:
-                    CIRCLE_RADIUS, CIRCLE_LIFETIME, SPAWN_RATE = set_difficulty(difficulty)
-                    start_time = time.time()
-                    circles = []
-                    score = 0
-                    combo = 0
-                    highest_combo = 0
-                    start_ticks = pygame.time.get_ticks()
-    else:
-        screen.fill(BLACK)
-        screen.blit(bg_nuke, (0, 0))
+    if all(Variables is None for Variables in [difficulty,parameter,leaderbord]):
 
-        if time.time() - start_time >= SPAWN_RATE:
-            circles.append(Circle(CIRCLE_RADIUS))
-            start_time = time.time()
+        display_menu.draw_main_menu()
+        difficulty,parameter,leaderbord = display_menu.choose_difficulty(difficulty,parameter,leaderbord)
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+    if difficulty:
 
-            if event.type  == KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
+        game_runer.launch_game(screen,difficulty,HEIGHT, WIDTH,display_menu,bg_nuke)
+        difficulty = None
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                hit = False
-                for circle in circles:
-                    if circle.is_clicked(event.pos):
-                        circles.remove(circle)
-                        score += 1*combo
-                        combo += 1
-                        hit = True
-                        break
-                if not hit:
-                    combo = 0
+    if parameter:
 
-        for circle in circles:
-            if time.time() - circle.spawn_time > CIRCLE_LIFETIME:
-                circles.remove(circle)
-                combo = 0
-            else:
-                circle.draw()
+        display_menu.draw_parameter_menu(big_font, cursors_images, cursors_images_display)
+        display_menu.choose_cursor(cursors, cursors_images_display)
+        parameter = None
 
-        if combo > highest_combo:
-            highest_combo = combo
+    if leaderbord:
 
-        score_text = font.render(f"Score: {score}", True, WHITE)
-        combo_text = font.render(f"Combo: {combo}", True, WHITE)
-        highest_combo_text = font.render(f"Highest Combo: {highest_combo}", True, WHITE)
-        difficulty_text = font.render(f"Difficulté: {difficulty.capitalize()}", True, WHITE)
+        display_menu.draw_leaderboard_menu()
+        leaderbord = None
 
-        screen.blit(score_text, (10, 10))
-        screen.blit(combo_text, (10, 50))
-        screen.blit(highest_combo_text, (10, 90))
-        screen.blit(difficulty_text, (10, 130))
-
-        display_timer(start_ticks)
-        pygame.display.flip()
-
+sql_manager.deconection()
 pygame.quit()
