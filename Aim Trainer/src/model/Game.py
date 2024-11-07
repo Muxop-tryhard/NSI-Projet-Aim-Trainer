@@ -20,8 +20,9 @@ class Circle:
 
 class Game_Maker:
 
-    def __init__(self,pygame):
+    def __init__(self,pygame,sql_manager):
         self.pygame=pygame
+        self.sql_manager=sql_manager
 
     def set_difficulty(self,difficulty):
 
@@ -46,7 +47,7 @@ class Game_Maker:
         starting_time = time.time()
         game_duration = 0
 
-        while game_duration <= 180:
+        while game_duration <= 5:
             game_duration =+ time.time() - starting_time
             display_menu.display_game_background(bg_nuke)
 
@@ -88,5 +89,4 @@ class Game_Maker:
             display_menu.draw_relative_game_infos(score, combo, highest_combo, difficulty)
             self.pygame.display.flip()
 
-
-
+        self.sql_manager.insert(difficulty,highest_combo,score)

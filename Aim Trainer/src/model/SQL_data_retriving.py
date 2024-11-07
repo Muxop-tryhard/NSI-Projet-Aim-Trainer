@@ -1,22 +1,17 @@
 import pymysql
 
-driver_name = 'ODBC Driver 17 for SQL Server'
-server = 'jdbc:mysql://sql7.freesqldatabase.com:3306/'
-database = 'sql7743092'
-username = 'sql7743092'
-password = '7cL2iyGXM6'
-
 class SQL_querys():
 
     def __init__(self):
         self.connected = pymysql.connect(host='sql7.freesqldatabase.com', user='sql7743092', passwd='7cL2iyGXM6', db='sql7743092')
+        self.UserName = 'Gérard'
 
     def deconection(self):
         self.connected.close()
 
-    def insert(self,UserName,difficulty,highest_combo,score):
+    def insert(self,difficulty,highest_combo,score):
         cursor = self.connected.cursor()
-        sql_query = f"INSERT INTO Leaderboard_Data_Base(UserName,Difficulty,Highest_Combo,Score) VALUES ('{UserName}','{difficulty}',{highest_combo},{score});"
+        sql_query = f"INSERT INTO Leaderboard_Data_Base(UserName,Difficulty,Highest_Combo,Score) VALUES ('{self.UserName}','{difficulty}',{highest_combo},{score});"
         cursor.execute(sql_query)
         self.connected.commit()
         cursor.close()

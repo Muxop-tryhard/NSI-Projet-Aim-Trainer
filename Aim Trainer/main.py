@@ -7,8 +7,6 @@ from pygame import KEYDOWN, FULLSCREEN, Color
 #On initialise Pygame
 pygame.init()
 
-
-
 screen = pygame.display.set_mode((0,0),FULLSCREEN)
 WIDTH, HEIGHT = screen.get_size()
 
@@ -55,14 +53,11 @@ clock = pygame.time.Clock()
 
 
 #On instancie les classes qui nous permettrons de : 1-Afficher du contenu 2-Joueur au jeu
-display_menu=Display_menu.DisplayMenu(screen, WIDTH,HEIGHT ,pygame,font,bg)
-game_runer=Game.Game_Maker(pygame)
-
 sql_manager=SQL_data_retriving.SQL_querys()
-sql_manager.insert('Denis', 'Difficile', 32, 3000000)
-top_10_leaderboard = sql_manager.get_first_ten()
+display_menu=Display_menu.DisplayMenu(screen, WIDTH,HEIGHT ,pygame,font,bg,sql_manager)
+game_runer=Game.Game_Maker(pygame,sql_manager)
 
-# On lance la du jeu
+# On lance la boucle du jeu
 while True:
 
     clock.tick(120) #Limite le nombre de FPS à 120 pour améliorer la fluide en gardant le même nombre de FPS constant
@@ -84,8 +79,9 @@ while True:
         parameter = None
 
     if leaderbord:
-        display_menu.draw_leaderboard_menu()
 
+        display_menu.draw_leaderboard_menu()
         leaderbord = None
+
 sql_manager.deconection()
 pygame.quit()
